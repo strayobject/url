@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+            <link rel="icon" type="image/x-icon" href="/themes/thephpleague/thephpleague.github.com/img/favicon.ico" />
+                <link rel="apple-touch-icon-precomposed" href="/themes/thephpleague/thephpleague.github.com/img/apple-touch-icon-precomposed.png">
+                <title>URL complex components - URL</title>
+                <meta name="description" content="Working with URL can often be much more difficult than you expect. This makes it easy to modify and update any URL.">
+                <link rel="stylesheet" href="/themes/thephpleague/thephpleague.github.com/css/all.css">
+    </head>
+<body>
+
+<section class="all_packages">
+    <a href="http://thephpleague.com/">
+        <img src="/themes/thephpleague/thephpleague.github.com/img/loep_logo.png" width="195" height="200" alt="The League of Extraordinary Packages">
+    </a>
+    <h2>Our Packages:</h2>
+    <ul>
+    </ul>
+</section>
+
+<header>
+    <a class="logo" href="/">
+                <span class="name">URL</span>
+        <span class="tagline">URL manipulation made easy in PHP.</span>
+    </a>
+    <a href="http://thephpleague.com/" class="league">
+        Presented by The League of Extraordinary Packages
+    </a>
+</header>
+
+<input type="checkbox" id="menu">
+<label for="menu" onclick>
+    <div class="closed">&#9776; Menu</div>
+    <div class="open">&#9776; Hide Menu</div>
+</label>
+
+<main>
+    <menu>
+                    <h2>Getting Started</h2>
+            <ul>
+                                    <li >
+                        <a href="/">Introduction</a>
+                    </li>
+                                    <li >
+                        <a href="/examples/">Examples</a>
+                    </li>
+                                    <li >
+                        <a href="/installation/">Installation</a>
+                    </li>
+                            </ul>
+                    <h2>The API</h2>
+            <ul>
+                                    <li >
+                        <a href="/overview/">Overview</a>
+                    </li>
+                            </ul>
+                    <h2>The Components</h2>
+            <ul>
+                                    <li >
+                        <a href="/components/basic/">Basic</a>
+                    </li>
+                                    <li class="selected">
+                        <a href="/components/complex/">Complex</a>
+                    </li>
+                            </ul>
+            </menu>
+    <article>
+        <h1>Complex URL components</h1>
+
+<p>Classes that deal with complex components (ie: <code>host</code>, <code>path</code>, <code>query</code>) implement the following interfaces:</p>
+
+<ul>
+<li><code>Countable</code></li>
+<li><code>IteratorAggregate</code></li>
+<li><code>ArrayAccess</code></li>
+<li><code>League\Url\Components\ComponentArrayInterface</code></li>
+</ul>
+
+<p>The <code>League\Url\Components\ComponentArrayInterface</code> extends the <a href="/components/basic">League\Url\Components\ComponentInterface</a> interface by adding the following methods:</p>
+
+<ul>
+<li><code>toArray()</code>: will return an array representation of the component;</li>
+<li><code>keys()</code>: will return all the keys or a subset of the keys of an array if a value is given.</li>
+</ul>
+
+<p class="message-info"><strong>Of note:</strong> The <code>$data</code> argument for the <code>set</code> method can also be an <code>array</code> or a <code>Traversable</code> object.</p>
+
+<h2>The Query class</h2>
+
+<p>This class manage the URL query component by implementing the <code>League\Url\Components\QueryInterface</code>.
+This interface extends the <code>League\Url\Components\ComponentArrayInterface</code> by adding the following methods:</p>
+
+<ul>
+<li><code>modify($data)</code>: update the component data;</li>
+</ul>
+
+<p class="message-info">On output, the query string is encoded following the <a href="http://www.faqs.org/rfcs/rfc3968" target="_blank">RFC 3986</a></p>
+
+<p>Example using the <code>League\Url\Components\Query</code> object:</p>
+
+<pre><code class="language-php">use League\Url\Components\Query;
+
+$query = new Query('foo=bar');
+$query['baz'] = 'troll';
+$query['toto'] = 'le heros';
+foreach ($query as $offset =&gt; $value) {
+    echo "$offset =&gt; $value".PHP_EOL;
+}
+//will echo 
+// foo =&gt; bar
+// baz =&gt; troll
+// toto =&gt; le%20heros
+
+$query-&gt;modify(array('foo' =&gt; 'baz', 'toto' =&gt; null));
+//by setting toto to null
+//you remove the toto argument from the query_string
+//you can get the same result by issuing
+unset($query['toto']);
+
+
+$found = $query-&gt;keys('troll');
+//$found equals array(0 =&gt; 'baz')
+
+echo count($query); //will return 2;
+</code></pre>
+
+<h2>The Path and Host classes</h2>
+
+<p>These classes manage the URL path and host components. They only differs in the way they validate and format before outputting their data. Both classes implements the <code>League\Url\Components\SegmentInterface</code> which extends the <code>League\Url\Components\ComponentArrayInterface</code> by adding the following methods:</p>
+
+<ul>
+<li><code>append($data, $whence = null, $whence_index = null)</code>: append data into the component;</li>
+<li><code>prepend($data, $whence = null, $whence_index = null)</code>: prepend data into the component;</li>
+<li><code>remove($data)</code>: remove data from the component;</li>
+</ul>
+
+<p>The arguments:</p>
+
+<ul>
+<li>The <code>$data</code> argument can be <code>null</code>, a valid component string, a object implementing the <code>__toString</code> method, an array or a <code>Traversable</code> object;</li>
+<li>The <code>$whence</code> argument specify the string segment where to include the data;</li>
+<li>The <code>$whence_index</code> argument specify the <code>$whence</code> index if it is present more than once. The value starts at <code>0</code>;</li>
+<li>When using the <code>remove</code> method, if the pattern is present multiple times only the first match found is removed </li>
+</ul>
+
+<p class="message-warning"><code>League\Url\Components\Host</code> only validates the host syntax but not its existence using a <a href="https://publicsuffix.org/" target="_blank">public suffix list</a>.</p>
+
+<p class="message-info"><strong>Tips:</strong> You can easily get the <code>$whence_index</code> by using the object <code>keys($whence)</code> method result.</p>
+
+<p>Example using the <code>League\Url\Components\Path</code> object:</p>
+
+<pre><code class="language-php">use League\Url\Components\Path;
+
+$path = new Path;
+$path[] = 'bar';
+$path[] = 'troll';
+foreach ($path as $offset =&gt; $value) {
+    echo "$offset =&gt; $value".PHP_EOL;
+}
+//will echo 
+// 0 =&gt; bar
+// 1 =&gt; troll
+
+$path-&gt;append('leheros/troll', 'bar');
+
+$found = $path-&gt;keys('troll');
+//$found equals array(0 =&gt; '2');
+
+echo count($path); //will return 4;
+echo $path; //will display bar/leheros/troll/troll
+var_export($path-&gt;toArray());
+//will display
+// array(
+//    0 =&gt; 'bar',
+//    1 =&gt; 'toto',
+//    2 =&gt; 'troll',
+//    3 =&gt; 'troll'
+// )
+
+$nb_occurences = count($path-&gt;keys('troll'));
+//if $nb_occurences is higher than 1, 
+//you must specify the $whence index 
+//if you do not insert you data around the first occurence
+//the $whence_index start at 0
+$path-&gt;prepend('bar', 'troll', 1);
+echo $path-&gt;get(); //will display "bar/leheros/troll/bar/troll"
+$path-&gt;remove('troll/bar');
+echo $path-&gt;getUriComponent(); //will display "/bar/leheros/troll"
+</code></pre>
+    </article>
+</main>
+
+<footer>
+    <span>&copy; Copyright The League of Extraordinary Packages.</span>
+    <span>Site design by <a href="http://reinink.ca">Jonathan Reinink</a>.</span>
+    <span>Powered by <a href="https://sculpin.io">Sculpin</a>.</span>
+</footer>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="/themes/thephpleague/thephpleague.github.com/js/scripts.js"></script>
+<script src="/themes/thephpleague/thephpleague.github.com/js/prism.js"></script>
+
+    <script>
+        (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+        function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+        e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+        e.src='//www.google-analytics.com/analytics.js';
+        r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+        ga('create','UA-46050814-6');ga('send','pageview');
+    </script>
+
+</body>
+</html>
